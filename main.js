@@ -1,0 +1,25 @@
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+ctx.globalCompositeOperation = 'source-over';
+
+const game = new Game();
+
+game.balls.push(new Ball(100, 100));
+game.canons.push(new Canon(100, 200));
+
+canvas.addEventListener('mousedown', async (e) => {
+    if (e.button === 0) {
+        game.mousePressed(e.offsetX, e.offsetY);
+    }
+});
+
+canvas.addEventListener('mouseup', async (e) => {
+    if (e.button === 0) {
+        game.mouseReleased(e.x, e.y);
+    }
+});
+
+setInterval(() => {
+    game.update(1 / FPS);
+    draw(ctx, game);
+}, 1000 / FPS);

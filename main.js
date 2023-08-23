@@ -15,7 +15,7 @@ canvas.addEventListener('mousedown', async (e) => {
 
 canvas.addEventListener('mouseup', async (e) => {
     if (e.button === 0) {
-        game.mouseReleased(e.x, e.y);
+        game.mouseReleased();
     }
 });
 
@@ -26,7 +26,8 @@ canvas.addEventListener("ontouchstart", async (e) => {
 });
 canvas.addEventListener("ontouchend", async (e) => {
     e.preventDefault();
-    game.mouseReleased(e.touches[0].clientX, e.touches[0].clientY);
+    if(e.touches.length === 0)
+        game.mouseReleased();
 });
 
 setInterval(() => {

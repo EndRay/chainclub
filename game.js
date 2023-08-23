@@ -322,7 +322,7 @@ class Game {
         }
     }
 
-    mouseReleased(mouseX, mouseY) {
+    mouseReleased() {
         this.holding = false;
     }
 }

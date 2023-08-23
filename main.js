@@ -22,12 +22,11 @@ canvas.addEventListener('mouseup', async (e) => {
 
 canvas.addEventListener("touchstart", async (e) => {
     e.preventDefault();
-    alert("touchstart");
     game.mousePressed(e.touches[0].clientX, e.touches[0].clientY);
 });
 canvas.addEventListener("touchend", async (e) => {
-    alert("touchend");
     e.preventDefault();
+    alert("touchend");
 });
 
 setInterval(() => {

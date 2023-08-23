@@ -27,10 +27,10 @@ canvas.addEventListener("ontouchstart", async (e) => {
     if(e.touches.length === 1)
         game.mousePressed(e.touches[0].clientX, e.touches[0].clientY);
 });
-// canvas.addEventListener("ontouchend", async (e) => {
-//     e.preventDefault();
-//
-// });
+canvas.addEventListener("ontouchend", async (e) => {
+    e.preventDefault();
+
+});
 
 setInterval(() => {
     game.update(1 / FPS);

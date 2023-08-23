@@ -24,7 +24,7 @@ canvas.addEventListener("ontouchstart", async (e) => {
     e.preventDefault();
     game.mousePressed(e.touches[0].clientX, e.touches[0].clientY);
 });
-canvas.addEventListener("ontouchend", async (e) => {
+canvas.addEventListener("touchend", async (e) => {
     e.preventDefault();
     game.mouseReleased();
 });

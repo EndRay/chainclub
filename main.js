@@ -26,8 +26,7 @@ canvas.addEventListener("ontouchstart", async (e) => {
 });
 canvas.addEventListener("ontouchend", async (e) => {
     e.preventDefault();
-    if(e.touches.length === 0)
-        game.mouseReleased();
+    game.mouseReleased();
 });
 
 setInterval(() => {

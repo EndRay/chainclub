@@ -19,6 +19,16 @@ canvas.addEventListener('mouseup', async (e) => {
     }
 });
 
+
+canvas.addEventListener("touchstart", async (e) => {
+    e.preventDefault();
+    game.mousePressed(e.touches[0].clientX, e.touches[0].clientY);
+});
+canvas.addEventListener("touchend", async (e) => {
+    e.preventDefault();
+    game.mouseReleased(e.touches[0].clientX, e.touches[0].clientY);
+});
+
 setInterval(() => {
     game.update(1 / FPS);
     game.draw(ctx);

@@ -20,14 +20,14 @@ canvas.addEventListener('mouseup', async (e) => {
 });
 
 
-canvas.addEventListener("ontouchstart", async (e) => {
+canvas.addEventListener("touchstart", async (e) => {
     e.preventDefault();
     if(e.touches.length === 0)
         game.mouseReleased();
     if(e.touches.length === 1)
         game.mousePressed(e.touches[0].clientX, e.touches[0].clientY);
 });
-canvas.addEventListener("ontouchend", async (e) => {
+canvas.addEventListener("touchend", async (e) => {
     e.preventDefault();
 
 });

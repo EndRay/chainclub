@@ -26,7 +26,7 @@ canvas.addEventListener("touchstart", async (e) => {
 });
 canvas.addEventListener("touchend", async (e) => {
     e.preventDefault();
-    alert("touchend");
+    game.mouseReleased();
 });
 
 setInterval(() => {

@@ -1,4 +1,4 @@
-class Particle extends KineticObject{
+class Particle extends SpriteObject {
     color
     initialLifeTime
     lifeTime
@@ -15,7 +15,6 @@ class Particle extends KineticObject{
 
     update(delta) {
         super.update(delta);
-        this.lifeTime -= delta;
     }
 
     _drawSprite(ctx) {

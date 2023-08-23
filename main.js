@@ -21,5 +21,5 @@ canvas.addEventListener('mouseup', async (e) => {
 
 setInterval(() => {
     game.update(1 / FPS);
-    draw(ctx, game);
+    game.draw(ctx);
 }, 1000 / FPS);

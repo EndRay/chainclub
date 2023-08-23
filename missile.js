@@ -10,9 +10,6 @@ class Missile extends SpriteObject {
     }
 
     update(delta){
-        this.fly_speed += MISSILE_ACCELERATION * delta;
-        this.x += this.fly_speed * Math.cos(this.angle) * delta;
-        this.y += this.fly_speed * Math.sin(this.angle) * delta;
     }
 
     _drawSprite(){

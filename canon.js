@@ -8,23 +8,6 @@ class Canon extends SpriteObject {
         this.cooldown = CANON_COOLDOWN;
     }
 
-    update(delta){
-        this.cooldown -= delta;
-        if(this.cooldown <= 0){
-            this.cooldown += CANON_COOLDOWN;
-            const offset_x = Math.cos(this.angle) * CANON_RADIUS;
-            const offset_y = Math.sin(this.angle) * CANON_RADIUS;
-            this.missiles.push(new Missile(this.x + offset_x, this.y + offset_y, this.angle));
-        }
-    }
-
-    draw(ctx){
-        for(let missile of this.missiles){
-            missile.draw(ctx);
-        }
-        super.draw(ctx);
-    }
-
     _drawSprite(ctx) {
         ctx.fillStyle = CANON_COLOR_1;
         ctx.beginPath();

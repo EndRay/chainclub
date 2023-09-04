@@ -10,9 +10,12 @@ class Game {
     pinPos;
     canonSpawnCooldown = 0;
     bonusSpawnCooldown = BONUS_SPAWN_COOLDOWN;
+    score = 0;
+    highscore = 0;
 
     constructor() {
         this.balls.push(new Ball(this.width/2, this.height/2));
+        this.highscore = Number(localStorage.getItem("highscore")) || 0;
     }
 
     spawnParticles(x, y, amount, lifeTime, flyDistance, colors) {
@@ -199,6 +202,7 @@ class Game {
 
         // missile-missile collision
         for (let i = this.missiles.length - 1; i >= 0; --i) {
+            if(i >= this.missiles.length) continue;
             const missile1 = this.missiles[i];
             for (let j = this.missiles.length - 1; j >= 0; --j) {
                 const missile2 = this.missiles[j];
@@ -284,6 +288,13 @@ class Game {
         // decrease invincibility
         for (const ball of this.balls)
             ball.invincibility -= delta;
+
+        // update score
+        this.score += delta * this.balls.length;
+        if(Math.floor(this.score) > this.highscore) {
+            this.highscore = Math.floor(this.score);
+            localStorage.setItem('highscore', this.highscore.toString());
+        }
     }
 
     draw(ctx) {
@@ -316,6 +327,24 @@ class Game {
         this.bonuses.forEach(bonus => {
             bonus.draw(ctx);
         });
+
+        // draw score
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.font = "30px Comic Sans MS";
+        ctx.fillStyle = "grey";
+        ctx.textAlign = "left";
+        ctx.fillText(Math.floor(this.score).toString(), 10, this.height - 10);
+        ctx.restore();
+
+        // draw highscore
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.font = "30px Comic Sans MS";
+        ctx.fillStyle = "yellow";
+        ctx.textAlign = "right";
+        ctx.fillText(Math.floor(this.highscore).toString(), this.width - 10, this.height - 10);
+        ctx.restore();
     }
 
     mousePressed(mouseX, mouseY) {

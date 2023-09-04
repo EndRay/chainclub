@@ -2,20 +2,22 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 ctx.globalCompositeOperation = 'source-over';
 
-const game = new Game();
-
-game.balls.push(new Ball(100, 100));
-game.canons.push(new Canon(100, 200));
+this.game = new Game();
+canvas.addEventListener('mousedown', async (e) => {
+    if (this.game.balls.length === 0)
+        this.game = new Game();
+});
 
 canvas.addEventListener('mousedown', async (e) => {
     if (e.button === 0) {
-        game.mousePressed(e.offsetX, e.offsetY);
+        this.game.mousePressed(e.offsetX, e.offsetY);
     }
 });
 
+
 canvas.addEventListener('mouseup', async (e) => {
     if (e.button === 0) {
-        game.mouseReleased();
+        this.game.mouseReleased();
     }
 });
 

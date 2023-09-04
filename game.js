@@ -11,6 +11,10 @@ class Game {
     canonSpawnCooldown = 0;
     bonusSpawnCooldown = BONUS_SPAWN_COOLDOWN;
 
+    constructor() {
+        this.balls.push(new Ball(this.width/2, this.height/2));
+    }
+
     spawnParticles(x, y, amount, lifeTime, flyDistance, colors) {
         for (let i = 0; i < amount; ++i) {
             const angle = Math.random() * Math.PI * 2;

@@ -2,10 +2,15 @@ class SpriteObject{
     x
     y
     angle = 0
-    draw(ctx){
-        ctx.save()
+
+    setRelative(ctx) {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
+    }
+
+    draw(ctx){
+        ctx.save()
+        this.setRelative(ctx);
         this._drawSprite(ctx);
         ctx.restore();
     }

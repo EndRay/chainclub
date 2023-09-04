@@ -9,13 +9,13 @@ class Canon extends SpriteObject {
     }
 
     _drawSprite(ctx) {
-        ctx.fillStyle = CANON_COLOR_1;
+        ctx.fillStyle = ENEMY_COLOR_1;
         ctx.beginPath();
         ctx.arc(0, 0, CANON_RADIUS*0.75, 0, 2 * Math.PI);
         ctx.fill();
         ctx.fillRect(0, -CANON_RADIUS/4, CANON_RADIUS*1.25, CANON_RADIUS/2);
 
-        ctx.fillStyle = CANON_COLOR_2;
+        ctx.fillStyle = ENEMY_COLOR_2;
         ctx.beginPath();
         ctx.arc(0, 0, CANON_RADIUS*0.5, 0, 2 * Math.PI);
         ctx.fill();

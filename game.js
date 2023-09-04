@@ -60,8 +60,117 @@ class Game {
     }
 
     update(delta) {
+        this.updateBalls(delta);
+        this.rotateCanons(delta);
+        this.shootMissiles(delta);
+        this.rotateMissiles(delta);
+        this.moveMissiles(delta);
+        this.moveParticles(delta);
+        this.handleCollisions();
+        this.handleSpawn(delta);
+        this.createTrail(delta);
+        this.decreaseInvincibility(delta);
+        this.updateScore(delta);
+    }
 
-        // update balls
+    draw(ctx) {
+        this.drawBackground(ctx);
+        this.drawBalls(ctx);
+        this.drawCanons(ctx);
+        this.drawMissiles(ctx);
+        this.drawParticles(ctx);
+        this.drawBonuses(ctx);
+        this.drawScore(ctx);
+        this.drawHighscore(ctx);
+    }
+
+    mousePressed(mouseX, mouseY) {
+        this.holding = true;
+        this.pinPos = [mouseX, mouseY];
+        for (let ball of this.balls) {
+            ball.stringLength = Math.hypot(ball.x - mouseX, ball.y - mouseY);
+        }
+    }
+
+    mouseReleased() {
+        this.holding = false;
+    }
+
+    handleSpawn(delta){
+        this.spawnCanon(delta);
+        this.spawnBonus(delta);
+    }
+
+    handleCollisions(){
+        this.collideCanonBalls();
+        this.collideMissileMissile();
+        this.collideBallMissile();
+        this.collideBallBonus();
+    }
+
+    drawBackground(ctx) {
+        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillRect(0, 0, this.width, this.height);
+    }
+
+    drawBalls(ctx) {
+        for (let ball of this.balls) {
+            if (this.holding) {
+                ctx.beginPath();
+                ctx.strokeStyle = ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR;
+                ctx.moveTo(this.pinPos[0], this.pinPos[1]);
+                ctx.lineTo(ball.x, ball.y);
+                ctx.stroke();
+            }
+            ball.draw(ctx);
+        }
+    }
+
+    drawCanons(ctx) {
+        for (let canon of this.canons) {
+            canon.draw(ctx);
+        }
+    }
+
+    drawMissiles(ctx) {
+        for (let missile of this.missiles) {
+            missile.draw(ctx);
+        }
+    }
+
+    drawParticles(ctx) {
+        for (let particle of this.particles) {
+            particle.draw(ctx);
+        }
+    }
+
+    drawBonuses(ctx) {
+        for (let bonus of this.bonuses) {
+            bonus.draw(ctx);
+        }
+    }
+
+    drawScore(ctx) {
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.font = "30px Comic Sans MS";
+        ctx.fillStyle = "grey";
+        ctx.textAlign = "left";
+        ctx.fillText(Math.floor(this.score).toString(), 10, this.height - 10);
+        ctx.restore();
+    }
+
+    drawHighscore(ctx) {
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.font = "30px Comic Sans MS";
+        ctx.fillStyle = "yellow";
+        ctx.textAlign = "right";
+        ctx.fillText(Math.floor(this.highscore).toString(), this.width - 10, this.height - 10);
+        ctx.restore();
+    }
+
+    updateBalls(delta){
         for (let ball of this.balls) {
             if (this.holding) {
                 const dx = this.pinPos[0] - ball.x;
@@ -106,8 +215,9 @@ class Game {
                 ball.vy = -Math.abs(ball.vy);
             }
         }
+    }
 
-        // rotate canons to the closest ball canons
+    rotateCanons(delta){
         for (let i = this.canons.length - 1; i >= 0; --i) {
             const canon = this.canons[i];
             let closestBall = null;
@@ -121,7 +231,9 @@ class Game {
                 continue;
             canon.angle = Math.atan2(closestBall.y - canon.y, closestBall.x - canon.x);
         }
-        // canons shoot missiles
+    }
+
+    shootMissiles(delta){
         for (let i = this.canons.length - 1; i >= 0; --i) {
             const canon = this.canons[i];
             canon.cooldown -= delta;
@@ -134,8 +246,9 @@ class Game {
                 canon.missiles.push(new_missile);
             }
         }
+    }
 
-        // rotate missiles to the closest ball
+    rotateMissiles(delta){
         for (let i = this.missiles.length - 1; i >= 0; --i) {
             const missile = this.missiles[i];
             let closestBall = null;
@@ -162,15 +275,18 @@ class Game {
                 missile.angle += Math.max(angleDiff, -delta * MISSILE_ROTATION_SPEED);
             }
         }
-        // move missiles
+    }
+
+    moveMissiles(delta){
         for (let i = this.missiles.length - 1; i >= 0; --i) {
             const missile = this.missiles[i];
             missile.fly_speed += MISSILE_ACCELERATION * delta;
             missile.x += missile.fly_speed * Math.cos(missile.angle) * delta;
             missile.y += missile.fly_speed * Math.sin(missile.angle) * delta;
         }
+    }
 
-        // update particles
+    moveParticles(delta){
         for (let i = this.particles.length - 1; i >= 0; --i) {
             const particle = this.particles[i];
             if (particle.lifeTime <= 0) {
@@ -183,8 +299,9 @@ class Game {
             particle.vx *= PARTICLE_FRICTION;
             particle.vy *= PARTICLE_FRICTION;
         }
+    }
 
-        // canon-ball collision
+    collideCanonBalls(){
         for (let i = this.canons.length - 1; i >= 0; --i) {
             const canon = this.canons[i];
             for (let ball of this.balls) {
@@ -199,8 +316,9 @@ class Game {
                 }
             }
         }
+    }
 
-        // missile-missile collision
+    collideMissileMissile(){
         for (let i = this.missiles.length - 1; i >= 0; --i) {
             if(i >= this.missiles.length) continue;
             const missile1 = this.missiles[i];
@@ -215,8 +333,9 @@ class Game {
                 }
             }
         }
+    }
 
-        // ball-missile collision
+    collideBallMissile(){
         for (let i = this.balls.length - 1; i >= 0; --i) {
             const ball = this.balls[i];
             if (ball.isInvincible() > 0) continue;
@@ -230,8 +349,9 @@ class Game {
                 }
             }
         }
+    }
 
-        // ball-bonus collision
+    collideBallBonus(){
         for (let i = this.balls.length - 1; i >= 0; --i) {
             const ball = this.balls[i];
             for (let j = this.bonuses.length - 1; j >= 0; --j) {
@@ -248,8 +368,10 @@ class Game {
                 }
             }
         }
+    }
 
-        // spawn canon
+
+    spawnCanon(delta){
         this.canonSpawnCooldown -= delta;
         if (this.canonSpawnCooldown <= 0) {
             this.canonSpawnCooldown += CANON_SPAWN_COOLDOWN;
@@ -266,8 +388,9 @@ class Game {
             } while (attempts++ < 10);
             this.canons.push(new Canon(x, y));
         }
+    }
 
-        // spawn bonus
+    spawnBonus(delta){
         this.bonusSpawnCooldown -= delta;
         if (this.bonusSpawnCooldown <= 0) {
             this.bonusSpawnCooldown += BONUS_SPAWN_COOLDOWN;
@@ -284,10 +407,11 @@ class Game {
             } while (attempts++ < 10);
             this.bonuses.push(new Bonus(x, y));
         }
+    }
 
-        // spawn ball particle trace
+    createTrail(delta){
         for (const ball of this.balls) {
-            let amount = BALL_TRACE_DENSITY * delta;
+            let amount = BALL_TRAIL_DENSITY * delta;
             while(amount > 0) {
                 if(amount >= 1){
                     amount -= 1;
@@ -307,83 +431,23 @@ class Game {
                 this.particles.push(
                     new Particle(x, y,
                         Math.random() * 2 * Math.PI,
-                        Math.random() * BALL_RADIUS * BALL_TRACE_PARTICLE_SPEED,
+                        Math.random() * BALL_RADIUS * BALL_TRAIL_PARTICLE_SPEED,
                         ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR,
-                        BALL_TRACE_PARTICLE_LIFETIME));
+                        BALL_TRAIL_PARTICLE_LIFETIME));
             }
         }
+    }
 
-        // decrease invincibility
+    decreaseInvincibility(delta){
         for (const ball of this.balls)
             ball.invincibility -= delta;
+    }
 
-        // update score
+    updateScore(delta){
         this.score += delta * this.balls.length;
         if(Math.floor(this.score) > this.highscore) {
             this.highscore = Math.floor(this.score);
             localStorage.setItem('highscore', this.highscore.toString());
         }
-    }
-
-    draw(ctx) {
-        ctx.fillStyle = BACKGROUND_COLOR;
-        ctx.fillRect(0, 0, this.width, this.height);
-
-        this.balls.forEach(ball => {
-            if (this.holding) {
-                ctx.beginPath();
-                ctx.strokeStyle = ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR;
-                ctx.moveTo(this.pinPos[0], this.pinPos[1]);
-                ctx.lineTo(ball.x, ball.y);
-                ctx.stroke();
-            }
-
-            ball.draw(ctx);
-        });
-
-        this.canons.forEach(canon => {
-            canon.draw(ctx);
-        });
-
-        this.missiles.forEach(missile => {
-            missile.draw(ctx);
-        });
-
-        this.particles.forEach(particle => {
-            particle.draw(ctx);
-        });
-        this.bonuses.forEach(bonus => {
-            bonus.draw(ctx);
-        });
-
-        // draw score
-        ctx.save();
-        ctx.globalAlpha = 0.5;
-        ctx.font = "30px Comic Sans MS";
-        ctx.fillStyle = "grey";
-        ctx.textAlign = "left";
-        ctx.fillText(Math.floor(this.score).toString(), 10, this.height - 10);
-        ctx.restore();
-
-        // draw highscore
-        ctx.save();
-        ctx.globalAlpha = 0.5;
-        ctx.font = "30px Comic Sans MS";
-        ctx.fillStyle = "yellow";
-        ctx.textAlign = "right";
-        ctx.fillText(Math.floor(this.highscore).toString(), this.width - 10, this.height - 10);
-        ctx.restore();
-    }
-
-    mousePressed(mouseX, mouseY) {
-        this.holding = true;
-        this.pinPos = [mouseX, mouseY];
-        for (let ball of this.balls) {
-            ball.stringLength = Math.hypot(ball.x - mouseX, ball.y - mouseY);
-        }
-    }
-
-    mouseReleased() {
-        this.holding = false;
     }
 }

@@ -1,5 +1,7 @@
 FPS = 60
 
+BACKGROUND_MUSIC = 'song.wav'
+
 
 BACKGROUND_COLOR = '#00000055'
 

@@ -285,6 +285,34 @@ class Game {
             this.bonuses.push(new Bonus(x, y));
         }
 
+        // spawn ball particle trace
+        for (const ball of this.balls) {
+            let amount = BALL_TRACE_DENSITY * delta;
+            while(amount > 0) {
+                if(amount >= 1){
+                    amount -= 1;
+                }
+                else{
+                    if(Math.random() >= amount) break;
+                    amount -= 1;
+                }
+                // choose random pos inside ball
+                let x, y;
+                {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const dist = Math.random() * BALL_RADIUS;
+                    x = ball.x + Math.cos(angle) * dist;
+                    y = ball.y + Math.sin(angle) * dist;
+                }
+                this.particles.push(
+                    new Particle(x, y,
+                        Math.random() * 2 * Math.PI,
+                        Math.random() * BALL_RADIUS * BALL_TRACE_PARTICLE_SPEED,
+                        ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR,
+                        BALL_TRACE_PARTICLE_LIFETIME));
+            }
+        }
+
         // decrease invincibility
         for (const ball of this.balls)
             ball.invincibility -= delta;

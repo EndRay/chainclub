@@ -52,6 +52,9 @@ class Game {
     }
 
     removeCanon(canon, destroySource) {
+        for (const missile of canon.missiles)
+            this.removeMissile(missile);
+
         const index = this.canons.indexOf(canon);
         if (index !== -1) {
             this.canons.splice(index, 1);
@@ -375,8 +378,6 @@ class Game {
 
                 const dist = Math.hypot(ball.x - canon.x, ball.y - canon.y);
                 if (dist < CANON_RADIUS + BALL_RADIUS) {
-                    for (const missile of canon.missiles)
-                        this.removeMissile(missile);
                     this.removeCanon(canon, "ball");
                     ball.invincibility = BALL_INVINCIBILITY_TIME;
                     break;

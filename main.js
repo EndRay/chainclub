@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 ctx.globalCompositeOperation = 'source-over';
 
 game = new Game();
+drawer = new Drawer(game, ctx);
 
 // start music on first interaction
 document.addEventListener('click', () => {
@@ -45,5 +46,5 @@ canvas.addEventListener("touchend", async (e) => {
 
 setInterval(() => {
     this.game.update(1 / FPS);
-    this.game.draw(ctx);
+    this.drawer.draw();
 }, 1000 / FPS);

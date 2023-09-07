@@ -104,20 +104,6 @@ class Game {
         this.updateScore(delta);
     }
 
-    draw(ctx) {
-        this.drawBackground(ctx);
-        this.drawParticles(ctx);
-        this.drawBalls(ctx);
-        this.drawRailgunAims(ctx);
-        this.drawRailgunLasers(ctx);
-        this.drawRailguns(ctx);
-        this.drawCanons(ctx);
-        this.drawMissiles(ctx);
-        this.drawBonuses(ctx);
-        this.drawScore(ctx);
-        this.drawHighscore(ctx);
-    }
-
     mousePressed(mouseX, mouseY) {
         this.holding = true;
         this.pinPos = [mouseX, mouseY];
@@ -219,106 +205,6 @@ class Game {
                 }
             }
         }
-    }
-
-    drawBackground(ctx) {
-        ctx.fillStyle = BACKGROUND_COLOR;
-        ctx.fillRect(0, 0, this.width, this.height);
-    }
-
-    drawBalls(ctx) {
-        for (let ball of this.balls) {
-            if (this.holding) {
-                ctx.beginPath();
-                ctx.strokeStyle = ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR;
-                ctx.moveTo(this.pinPos[0], this.pinPos[1]);
-                ctx.lineTo(ball.x, ball.y);
-                ctx.stroke();
-            }
-            ball.draw(ctx);
-        }
-    }
-
-    drawRailguns(ctx){
-        for (let railgun of this.railguns) {
-            railgun.draw(ctx);
-        }
-    }
-
-    drawRailgunAims(ctx){
-        for (let railgun of this.railguns) {
-            if(railgun.isAiming()) {
-                ctx.save();
-                railgun.setRelative(ctx);
-                ctx.beginPath();
-                ctx.strokeStyle = RAILGUN_LASER_COLOR;
-                ctx.globalAlpha *= (1 - railgun.cooldown / RAILGUN_AIM_TIME) * 0.7;
-                ctx.moveTo(0, 0);
-                ctx.lineTo(this.LASERS_LENGTH, 0);
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
-    }
-
-    drawRailgunLasers(ctx){
-        for (let laser of this.railgunLasers){
-            ctx.save();
-            ctx.translate(laser.x, laser.y);
-            ctx.rotate(laser.angle);
-            ctx.globalAlpha *= laser.lifeTime / RAILGUN_LASER_LIFETIME;
-            ctx.beginPath();
-            ctx.strokeStyle = RAILGUN_LASER_COLOR;
-            ctx.lineWidth = 6;
-            ctx.moveTo(0, 0);
-            ctx.lineTo(this.LASERS_LENGTH, 0);
-            ctx.stroke();
-            ctx.restore();
-        }
-    }
-
-    drawCanons(ctx) {
-        for (let canon of this.canons) {
-            canon.draw(ctx);
-        }
-    }
-
-    drawMissiles(ctx) {
-        for (let missile of this.missiles) {
-            missile.draw(ctx);
-        }
-    }
-
-    drawParticles(ctx) {
-        for (let particle of this.particles) {
-            particle.draw(ctx);
-        }
-    }
-
-    drawBonuses(ctx) {
-        for (let bonus of this.bonuses) {
-            bonus.draw(ctx);
-        }
-    }
-
-    drawScore(ctx) {
-        ctx.save();
-        ctx.globalAlpha *= 0.5;
-        ctx.font = "30px Comic Sans MS";
-        ctx.fillStyle = "grey";
-        ctx.textAlign = "left";
-        ctx.fillText(Math.floor(this.score).toString(), 10, this.height - 10);
-        ctx.restore();
-    }
-
-    drawHighscore(ctx) {
-        ctx.save();
-        ctx.globalAlpha *= 0.5;
-        ctx.font = "30px Comic Sans MS";
-        ctx.fillStyle = "yellow";
-        ctx.textAlign = "right";
-        ctx.fillText(Math.floor(this.highscore).toString(), this.width - 10, this.height - 10);
-        ctx.restore();
     }
 
     updateBalls(delta) {

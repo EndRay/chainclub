@@ -662,7 +662,9 @@ class Game {
     }
 
     updateScore(delta) {
-        this.score += delta * this.balls.length;
+        if(this.balls.length === 0)
+            return;
+        this.score += delta;
         if (Math.floor(this.score) > this.highscore) {
             this.highscore = Math.floor(this.score);
             localStorage.setItem('highscore', this.highscore.toString());

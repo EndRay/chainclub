@@ -32,11 +32,7 @@ class Drawer {
     drawBalls() {
         for (let ball of this.game.balls) {
             if (this.game.holding) {
-                this.ctx.beginPath();
-                this.ctx.strokeStyle = ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR;
-                this.ctx.moveTo(this.game.pinPos[0], this.game.pinPos[1]);
-                this.ctx.lineTo(ball.x, ball.y);
-                this.ctx.stroke();
+                this.drawString(ball);
             }
             this.drawBall(ball);
         }
@@ -133,6 +129,14 @@ class Drawer {
     setRelative(obj){
         this.ctx.translate(obj.x, obj.y);
         this.ctx.rotate(obj.angle);
+    }
+
+    drawString(ball) {
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR;
+        this.ctx.moveTo(this.game.pinPos[0], this.game.pinPos[1]);
+        this.ctx.lineTo(ball.x, ball.y);
+        this.ctx.stroke();
     }
 
     drawBall(ball){

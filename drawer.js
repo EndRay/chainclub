@@ -22,19 +22,19 @@ class Drawer {
     }
 
     drawBackground() {
-        if(game.matrixDuration > 0)
+        if(this.game.matrixDuration > 0)
             this.ctx.fillStyle = MATRIX_BACKGROUND_COLOR;
         else
             this.ctx.fillStyle = BACKGROUND_COLOR;
-        this.ctx.fillRect(0, 0, game.width, game.height);
+        this.ctx.fillRect(0, 0, this.game.width, this.game.height);
     }
 
     drawBalls() {
-        for (let ball of game.balls) {
-            if (game.holding) {
+        for (let ball of this.game.balls) {
+            if (this.game.holding) {
                 this.ctx.beginPath();
                 this.ctx.strokeStyle = ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR;
-                this.ctx.moveTo(game.pinPos[0], game.pinPos[1]);
+                this.ctx.moveTo(this.game.pinPos[0], this.game.pinPos[1]);
                 this.ctx.lineTo(ball.x, ball.y);
                 this.ctx.stroke();
             }
@@ -43,13 +43,13 @@ class Drawer {
     }
 
     drawRailguns(){
-        for (let railgun of game.railguns) {
+        for (let railgun of this.game.railguns) {
             this.drawRailgun(railgun);
         }
     }
 
     drawRailgunAims(){
-        for (let railgun of game.railguns) {
+        for (let railgun of this.game.railguns) {
             if(railgun.isAiming()) {
                 this.ctx.save();
                 this.setRelative(railgun);
@@ -57,7 +57,7 @@ class Drawer {
                 this.ctx.strokeStyle = RAILGUN_LASER_COLOR;
                 this.ctx.globalAlpha *= (1 - railgun.cooldown / RAILGUN_AIM_TIME) * 0.7;
                 this.ctx.moveTo(0, 0);
-                this.ctx.lineTo(game.LASERS_LENGTH, 0);
+                this.ctx.lineTo(this.game.LASERS_LENGTH, 0);
                 this.ctx.stroke();
                 this.ctx.restore();
             }
@@ -65,7 +65,7 @@ class Drawer {
     }
 
     drawRailgunLasers(){
-        for (let laser of game.railgunLasers){
+        for (let laser of this.game.railgunLasers){
             this.ctx.save();
             this.ctx.translate(laser.x, laser.y);
             this.ctx.rotate(laser.angle);
@@ -74,38 +74,38 @@ class Drawer {
             this.ctx.strokeStyle = RAILGUN_LASER_COLOR;
             this.ctx.lineWidth = 6;
             this.ctx.moveTo(0, 0);
-            this.ctx.lineTo(game.LASERS_LENGTH, 0);
+            this.ctx.lineTo(this.game.LASERS_LENGTH, 0);
             this.ctx.stroke();
             this.ctx.restore();
         }
     }
 
     drawCanons() {
-        for (let canon of game.canons) {
+        for (let canon of this.game.canons) {
             this.drawCanon(canon);
         }
     }
 
     drawMissiles() {
-        for (let missile of game.missiles) {
+        for (let missile of this.game.missiles) {
             this.drawMissile(missile);
         }
     }
 
     drawParticles() {
-        for (let particle of game.particles) {
+        for (let particle of this.game.particles) {
             this.drawParticle(particle);
         }
     }
 
     drawBonuses() {
-        for (let bonus of game.bonuses) {
+        for (let bonus of this.game.bonuses) {
             this.drawBonus(bonus);
         }
     }
 
     drawMatrixBonuses() {
-        for (let bonus of game.matrixBonuses) {
+        for (let bonus of this.game.matrixBonuses) {
             this.drawMatrixBonus(bonus);
         }
     }
@@ -116,7 +116,7 @@ class Drawer {
         this.ctx.font = "30px Comic Sans MS";
         this.ctx.fillStyle = "grey";
         this.ctx.textAlign = "left";
-        this.ctx.fillText(Math.floor(game.score).toString(), 10, game.height - 10);
+        this.ctx.fillText(Math.floor(this.game.score).toString(), 10, this.game.height - 10);
         this.ctx.restore();
     }
 
@@ -126,7 +126,7 @@ class Drawer {
         this.ctx.font = "30px Comic Sans MS";
         this.ctx.fillStyle = "yellow";
         this.ctx.textAlign = "right";
-        this.ctx.fillText(Math.floor(game.highscore).toString(), game.width - 10, game.height - 10);
+        this.ctx.fillText(Math.floor(this.game.highscore).toString(), this.game.width - 10, this.game.height - 10);
         this.ctx.restore();
     }
 

@@ -2,9 +2,6 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 ctx.globalCompositeOperation = 'source-over';
 
-game = new Game();
-drawer = new Drawer(game, ctx);
-
 // start music on first interaction
 document.addEventListener('click', () => {
     const music = new Audio(BACKGROUND_MUSIC);
@@ -12,9 +9,14 @@ document.addEventListener('click', () => {
     music.play();
 }, { once: true});
 
+const restartGame = () => {
+    this.game = new Game();
+    this.drawer = new Drawer(this.game, ctx);
+}
+
 const restartGameIfNeeded = () => {
     if (this.game.balls.length === 0)
-        this.game = new Game();
+        restartGame();
 }
 
 // mouse
@@ -43,6 +45,9 @@ canvas.addEventListener("touchend", async (e) => {
     e.preventDefault();
     this.game.mouseReleased();
 });
+
+
+restartGame();
 
 setInterval(() => {
     this.game.update(1 / FPS);

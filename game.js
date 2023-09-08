@@ -6,6 +6,16 @@ function particleDistanceToSpeed(distance){
     return distance * FPS * (1 - PARTICLE_FRICTION);
 }
 
+function distanceToRay(ray, x, y){
+    const distance = Math.abs((x - ray.x) * Math.sin(ray.angle) - (y - ray.y) * Math.cos(ray.angle));
+    const directionDistance = (x - ray.x) * Math.cos(ray.angle) + (y - ray.y) * Math.sin(ray.angle);
+
+    if(directionDistance > 0)
+        return distance;
+    return Math.hypot(ray.x - x, ray.y - y);
+}
+
+
 class Game {
     width = 1600;
     height = 900;
@@ -19,11 +29,17 @@ class Game {
     missiles = [];
     particles = [];
     bonuses = [];
+    matrixBonuses = [];
     holding = false;
     pinPos;
+
     canonSpawnCooldown = 0;
     railgunSpawnCooldown = RAILGUN_SPAWN_COOLDOWN;
     bonusSpawnCooldown = BONUS_SPAWN_COOLDOWN;
+    matrixBonusSpawnCooldown = MATRIX_BONUS_SPAWN_COOLDOWN;
+
+    matrixDuration = 0;
+
     score = 0;
     highscore = 0;
 
@@ -31,8 +47,6 @@ class Game {
         this.balls.push(new Ball(this.width / 2, this.height / 2));
         this.highscore = Number(localStorage.getItem("highscore")) || 0;
     }
-
-
 
     throwParticle(fromX, fromY, toX, toY, flyTime, color) {
         const angle = Math.atan2(toY - fromY, toX - fromX);
@@ -140,26 +154,11 @@ class Game {
         }
     }
 
-    update(delta) {
-        this.updateBalls(delta);
-        this.decreaseRailgunLasersLifetime(delta);
-
-        this.rotateCanons(delta);
-        this.rotateRailguns(delta);
-
-        this.shootCanons(delta);
-        this.shootRailguns(delta);
-
-        this.rotateMissiles(delta);
-        this.moveMissiles(delta);
-        this.updateParticles(delta);
-        this.handleCollisions();
-        this.handleSpawn(delta);
-        this.createTrail(delta);
-        this.createRailgunShootParticles(delta);
-        this.decreaseInvincibility(delta);
-
-        this.updateScore(delta);
+    destroyMatrixBonus(bonus) {
+        const index = this.matrixBonuses.indexOf(bonus);
+        if (index !== -1) {
+            this.matrixBonuses.splice(index, 1);
+        }
     }
 
     mousePressed(mouseX, mouseY) {
@@ -174,10 +173,86 @@ class Game {
         this.holding = false;
     }
 
+    dangerLevel(){
+        let distance = Infinity
+        for(const ball of this.balls){
+            for(const missile of this.missiles){
+                distance = Math.min(distance, Math.hypot(ball.x - missile.x, ball.y - missile.y) - BALL_RADIUS + MISSILE_RADIUS);
+            }
+            for(const railgun of this.railguns){
+                if(railgun.isAiming()){
+                    distance = Math.min(distance, distanceToRay(
+                        {
+                            x: railgun.x,
+                            y: railgun.y,
+                            angle: railgun.angle
+                        }, ball.x, ball.y) - BALL_RADIUS);
+                }
+            }
+            for(const laser of this.railgunLasers){
+                distance = Math.min(distance, distanceToRay(laser, ball.x, ball.y) - BALL_RADIUS);
+            }
+        }
+        let level = 1 - (distance - MATRIX_MIN_DANGER_DISTANCE) / (MATRIX_MAX_DANGER_DISTANCE - MATRIX_MIN_DANGER_DISTANCE);
+        return Math.max(0, Math.min(1, level));
+    }
+
+    update(delta) {
+        if(this.matrixDuration > 0){
+            const slowLevel = this.dangerLevel();
+            delta *= Math.pow(MATRIX_SLOW, slowLevel);
+        }
+
+        this.updateBalls(delta);
+        this.decreaseRailgunLasersLifetime(delta);
+
+        this.rotateCanons(delta);
+        this.rotateRailguns(delta);
+
+        this.shootCanons(delta);
+        this.shootRailguns(delta);
+
+        this.rotateMissiles(delta);
+        this.moveMissiles(delta);
+        this.updateParticles(delta);
+
+        this.handleCollisions();
+        this.handleSpawn(delta);
+
+        this.updateMatrixBonusesLifeTime(delta);
+
+        this.createTrail(delta);
+        this.createRailgunShootParticles(delta);
+
+        this.decreaseInvincibility(delta);
+        this.decreaseMatrixDuration(delta);
+
+        this.updateScore(delta);
+    }
+
+    updateMatrixBonusesLifeTime(delta) {
+        for (const bonus of this.matrixBonuses) {
+            bonus.lifeTime -= delta;
+            if (bonus.lifeTime <= 0) {
+                this.destroyMatrixBonus(bonus);
+            }
+        }
+    }
+
+    decreaseMatrixDuration(delta) {
+        if (this.matrixDuration > 0) {
+            this.matrixDuration -= delta;
+            if (this.matrixDuration <= 0) {
+                this.matrixDuration = 0;
+            }
+        }
+    }
+
     handleSpawn(delta) {
         this.spawnCanon(delta);
         this.spawnRailgun(delta);
         this.spawnBonus(delta);
+        this.spawnMatrixBonus(delta);
     }
 
     handleCollisions() {
@@ -193,17 +268,11 @@ class Game {
         this.collideRailgunLaserRailgun();
 
         this.collideBallBonus();
+        this.collideBallMatrixBonus();
     }
 
     isRailgunLaserCollide(laser, x, y, radius){
-        const distance = Math.abs((x - laser.x) * Math.sin(laser.angle) - (y - laser.y) * Math.cos(laser.angle));
-        const directionDistance = (x - laser.x) * Math.cos(laser.angle) + (y - laser.y) * Math.sin(laser.angle);
-
-        if(directionDistance > 0 && distance < radius)
-            return true;
-        if(directionDistance < 0 && Math.hypot(laser.x - x, laser.y - y) < radius)
-            return true;
-        return false;
+        return distanceToRay(laser, x, y) < radius;
     }
 
     collideMissileRailgun(){
@@ -493,6 +562,21 @@ class Game {
         }
     }
 
+    collideBallMatrixBonus() {
+        for (let i = this.balls.length - 1; i >= 0; --i) {
+            const ball = this.balls[i];
+            for (let j = this.matrixBonuses.length - 1; j >= 0; --j) {
+                const bonus = this.matrixBonuses[j];
+                const dist = Math.hypot(ball.x - bonus.x, ball.y - bonus.y);
+                if (dist < BALL_RADIUS + MATRIX_BONUS_RADIUS) {
+                    this.destroyMatrixBonus(bonus);
+                    this.matrixDuration = MATRIX_BONUS_DURATION;
+                    break;
+                }
+            }
+        }
+    }
+
     chooseRandomPosition(minDistanceToBalls) {
         let x, y;
         let attempts = 0;
@@ -530,8 +614,17 @@ class Game {
         this.bonusSpawnCooldown -= delta;
         if (this.bonusSpawnCooldown <= 0) {
             this.bonusSpawnCooldown += BONUS_SPAWN_COOLDOWN;
-            const [x, y] = this.chooseRandomPosition(BONUS_SPAWN_MIN_DISTANCE);
+            const [x, y] = this.chooseRandomPosition(BONUSES_SPAWN_MIN_DISTANCE);
             this.bonuses.push(new Bonus(x, y));
+        }
+    }
+
+    spawnMatrixBonus(delta) {
+        this.matrixBonusSpawnCooldown -= delta;
+        if (this.matrixBonusSpawnCooldown <= 0) {
+            this.matrixBonusSpawnCooldown += MATRIX_BONUS_SPAWN_COOLDOWN;
+            const [x, y] = this.chooseRandomPosition(BONUSES_SPAWN_MIN_DISTANCE);
+            this.matrixBonuses.push(new MatrixBonus(x, y));
         }
     }
 

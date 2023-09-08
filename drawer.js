@@ -16,12 +16,16 @@ class Drawer {
         this.drawCanons();
         this.drawMissiles();
         this.drawBonuses();
+        this.drawMatrixBonuses();
         this.drawScore();
         this.drawHighscore();
     }
 
     drawBackground() {
-        this.ctx.fillStyle = BACKGROUND_COLOR;
+        if(game.matrixDuration > 0)
+            this.ctx.fillStyle = MATRIX_BACKGROUND_COLOR;
+        else
+            this.ctx.fillStyle = BACKGROUND_COLOR;
         this.ctx.fillRect(0, 0, game.width, game.height);
     }
 
@@ -97,6 +101,12 @@ class Drawer {
     drawBonuses() {
         for (let bonus of game.bonuses) {
             this.drawBonus(bonus);
+        }
+    }
+
+    drawMatrixBonuses() {
+        for (let bonus of game.matrixBonuses) {
+            this.drawMatrixBonus(bonus);
         }
     }
 
@@ -231,6 +241,44 @@ class Drawer {
         this.ctx.beginPath()
         this.ctx.arc(0, 0, BONUS_RADIUS, 0, 2 * Math.PI);
         this.ctx.fill();
+
+        this.ctx.restore();
+    }
+
+    drawMatrixBonus(bonus) {
+        this.ctx.save();
+        this.setRelative(bonus);
+
+        this.ctx.strokeStyle = MATRIX_BONUS_COLOR;
+        this.ctx.globalAlpha = 1;
+
+        this.ctx.lineWidth = 1.5;
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, MATRIX_BONUS_RADIUS, 0, 2 * Math.PI);
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = MATRIX_BONUS_COLOR;
+        this.ctx.fillRect(-MATRIX_BONUS_RADIUS * 0.3, -MATRIX_BONUS_RADIUS, MATRIX_BONUS_RADIUS * 0.3 * 2, -MATRIX_BONUS_RADIUS * 0.2);
+
+        {
+            const angle = -4 * Math.PI * 2 * (bonus.lifeTime / MATRIX_BONUS_LIFETIME) + (Math.PI * 0.5);
+            this.ctx.lineWidth = 2;
+            this.ctx.moveTo(0, 0);
+            this.ctx.lineTo(
+                Math.cos(angle) * -MATRIX_BONUS_RADIUS * 0.7,
+                Math.sin(angle) * -MATRIX_BONUS_RADIUS * 0.7);
+            this.ctx.stroke();
+        }
+
+        {
+            const angle = -Math.PI * 2 * (bonus.lifeTime / MATRIX_BONUS_LIFETIME) + (Math.PI * 0.5);
+            this.ctx.lineWidth = 2;
+            this.ctx.moveTo(0, 0);
+            this.ctx.lineTo(
+                Math.cos(angle) * -MATRIX_BONUS_RADIUS * 0.4,
+                Math.sin(angle) * -MATRIX_BONUS_RADIUS * 0.4);
+            this.ctx.stroke();
+        }
 
         this.ctx.restore();
     }

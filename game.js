@@ -76,7 +76,7 @@ class Game {
         }
     }
 
-    removeRailgun(railgun, destroySource) {
+    destroyRailgun(railgun, destroySource) {
         const index = this.railguns.indexOf(railgun);
         if (index !== -1) {
             this.railguns.splice(index, 1);
@@ -84,9 +84,9 @@ class Game {
         }
     }
 
-    removeCanon(canon, destroySource, destroySourceObject) {
+    destroyCanon(canon, destroySource, destroySourceObject) {
         for (const missile of canon.missiles)
-            this.removeMissile(missile);
+            this.destroyMissile(missile);
 
         const index = this.canons.indexOf(canon);
         if (index !== -1) {
@@ -110,7 +110,7 @@ class Game {
         }
     }
 
-    removeBall(ball) {
+    destroyBall(ball) {
         const index = this.balls.indexOf(ball);
         if (index !== -1) {
             this.balls.splice(index, 1);
@@ -121,7 +121,7 @@ class Game {
         }
     }
 
-    removeMissile(missile) {
+    destroyMissile(missile) {
         const index = this.missiles.indexOf(missile);
         if (index !== -1) {
             this.missiles.splice(index, 1);
@@ -133,7 +133,7 @@ class Game {
         }
     }
 
-    removeBonus(bonus) {
+    destroyBonus(bonus) {
         const index = this.bonuses.indexOf(bonus);
         if (index !== -1) {
             this.bonuses.splice(index, 1);
@@ -213,8 +213,8 @@ class Game {
                 const missile = this.missiles[j];
                 const dist = Math.hypot(railgun.x - missile.x, railgun.y - missile.y);
                 if (dist < RAILGUN_RADIUS + MISSILE_RADIUS) {
-                    this.removeMissile(missile);
-                    this.removeRailgun(railgun);
+                    this.destroyMissile(missile);
+                    this.destroyRailgun(railgun);
                     break;
                 }
             }
@@ -226,7 +226,7 @@ class Game {
             for(let i = this.balls.length - 1; i >= 0; --i){
                 const ball = this.balls[i];
                 if(this.isRailgunLaserCollide(railgunLaser, ball.x, ball.y, BALL_RADIUS)) {
-                    this.removeBall(ball);
+                    this.destroyBall(ball);
                 }
             }
         }
@@ -237,7 +237,7 @@ class Game {
             for(let i = this.canons.length - 1; i >= 0; --i){
                 const canon = this.canons[i];
                 if(this.isRailgunLaserCollide(railgunLaser, canon.x, canon.y, CANON_RADIUS)) {
-                    this.removeCanon(canon, "railgunLaser");
+                    this.destroyCanon(canon, "railgunLaser");
                 }
             }
         }
@@ -248,7 +248,7 @@ class Game {
             for(let i = this.missiles.length - 1; i >= 0; --i){
                 const missile = this.missiles[i];
                 if(this.isRailgunLaserCollide(railgunLaser, missile.x, missile.y, MISSILE_RADIUS)) {
-                    this.removeMissile(missile);
+                    this.destroyMissile(missile);
                 }
             }
         }
@@ -259,7 +259,7 @@ class Game {
             for(let i = this.railguns.length - 1; i >= 0; --i){
                 const railgun = this.railguns[i];
                 if(railgunLaser.owner !== railgun && this.isRailgunLaserCollide(railgunLaser, railgun.x, railgun.y, RAILGUN_RADIUS)) {
-                    this.removeRailgun(railgun);
+                    this.destroyRailgun(railgun);
                 }
             }
         }
@@ -433,7 +433,7 @@ class Game {
 
                 const dist = Math.hypot(ball.x - canon.x, ball.y - canon.y);
                 if (dist < CANON_RADIUS + BALL_RADIUS) {
-                    this.removeCanon(canon, "ball", ball);
+                    this.destroyCanon(canon, "ball", ball);
                     ball.invincibility = BALL_INVINCIBILITY_TIME;
                     break;
                 }
@@ -450,8 +450,8 @@ class Game {
                 if (missile1 === missile2) continue;
                 const dist = Math.hypot(missile1.x - missile2.x, missile1.y - missile2.y);
                 if (dist < MISSILE_RADIUS + MISSILE_RADIUS) {
-                    this.removeMissile(missile1);
-                    this.removeMissile(missile2);
+                    this.destroyMissile(missile1);
+                    this.destroyMissile(missile2);
                     break;
                 }
             }
@@ -466,8 +466,8 @@ class Game {
                 const missile = this.missiles[j];
                 const dist = Math.hypot(ball.x - missile.x, ball.y - missile.y);
                 if (dist < BALL_RADIUS + MISSILE_RADIUS) {
-                    this.removeMissile(missile);
-                    this.removeBall(ball);
+                    this.destroyMissile(missile);
+                    this.destroyBall(ball);
                     break;
                 }
             }
@@ -481,7 +481,7 @@ class Game {
                 const bonus = this.bonuses[j];
                 const dist = Math.hypot(ball.x - bonus.x, ball.y - bonus.y);
                 if (dist < BALL_RADIUS + BONUS_RADIUS) {
-                    this.removeBonus(bonus);
+                    this.destroyBonus(bonus);
                     [ball.vx, ball.vy] = [ball.vy, -ball.vx];
                     const newBall = new Ball(ball.x, ball.y, -ball.vx, -ball.vy);
                     this.balls.push(newBall);

@@ -1,10 +1,10 @@
 class Missile {
-    fly_speed
+    flySpeed
 
     constructor(x, y, angle){
         this.x = x;
         this.y = y;
         this.angle = angle;
-        this.fly_speed = MISSILE_INITIAL_SPEED;
+        this.flySpeed = MISSILE_INITIAL_SPEED;
     }
 }

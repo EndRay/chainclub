@@ -1,3 +1,11 @@
+function particleSpeedToDistance(speed){
+    return speed / FPS / (1 - PARTICLE_FRICTION);
+}
+
+function particleDistanceToSpeed(distance){
+    return distance * FPS * (1 - PARTICLE_FRICTION);
+}
+
 class Game {
     width = 1600;
     height = 900;
@@ -24,6 +32,8 @@ class Game {
         this.highscore = Number(localStorage.getItem("highscore")) || 0;
     }
 
+
+
     throwParticle(fromX, fromY, toX, toY, flyTime, color) {
         const angle = Math.atan2(toY - fromY, toX - fromX);
         const flyDistance = Math.hypot(toX - fromX, toY - fromY);
@@ -33,13 +43,36 @@ class Game {
         this.particles.push(new Particle(fromX, fromY, angle, speed, color, flyTime));
     }
 
-    spawnParticles(x, y, amount, lifeTime, flyDistance, colors) {
+    spawnParticles(x, y, amount, lifeTime, flyDistance, colors, radius=0, direction, directionDistance) {
+        const maxSpeed = particleDistanceToSpeed(flyDistance);
+        const directionSpeed = particleDistanceToSpeed(directionDistance);
         for (let i = 0; i < amount; ++i) {
-            const angle = Math.random() * Math.PI * 2;
-            const maxSpeed = flyDistance * (1 - PARTICLE_FRICTION) * FPS;
-            const speed = Math.random() * maxSpeed;
+            const randomAngle = Math.random() * Math.PI * 2;
+            const randomSpeed = Math.random() * maxSpeed;
+            let angle, speed;
+            if(direction === undefined) {
+                angle = randomAngle;
+                speed = randomSpeed
+            }
+            else {
+                // const randomDirectedAngle = direction + (Math.random() - 0.5) * directionAngle;
+                // const randomDirectedSpeed = Math.random() * directionDistance;
+                const randomDirectedAngle = direction;
+                const randomDirectedSpeed = directionSpeed;
+
+                const [dx1, dy1] = [Math.cos(randomAngle) * randomSpeed, Math.sin(randomAngle) * randomSpeed];
+                const [dx2, dy2] = [Math.cos(randomDirectedAngle) * randomDirectedSpeed, Math.sin(randomDirectedAngle) * randomDirectedSpeed];
+
+                angle = Math.atan2(dy1 + dy2, dx1 + dx2);
+                speed = Math.hypot(dx1 + dx2, dy1 + dy2);
+            }
             const color = colors[Math.floor(Math.random() * colors.length)];
-            this.particles.push(new Particle(x, y, angle, speed, color, lifeTime));
+
+            const offset = Math.random() * radius;
+            const newX = x + Math.cos(randomAngle) * offset;
+            const newY = y + Math.sin(randomAngle) * offset;
+
+            this.particles.push(new Particle(newX, newY, angle, speed, color, lifeTime));
         }
     }
 
@@ -51,14 +84,29 @@ class Game {
         }
     }
 
-    removeCanon(canon, destroySource) {
+    removeCanon(canon, destroySource, destroySourceObject) {
         for (const missile of canon.missiles)
             this.removeMissile(missile);
 
         const index = this.canons.indexOf(canon);
         if (index !== -1) {
             this.canons.splice(index, 1);
-            this.spawnParticles(canon.x, canon.y, 300, 0.6, 90, FIRE_COLORS.concat(DESTROY_SOURCE_ADDITIONAL_COLORS[destroySource] || []));
+
+            const colors = FIRE_COLORS.concat(DESTROY_SOURCE_ADDITIONAL_COLORS[destroySource] || []);
+
+            if(destroySource === "ball"){
+                const direction = Math.atan2(destroySourceObject.vy, destroySourceObject.vx);
+                this.spawnParticles(canon.x, canon.y, 300, 0.6, 90,
+                    colors,
+                    CANON_RADIUS,
+                    direction, particleSpeedToDistance(Math.hypot(destroySourceObject.vy, destroySourceObject.vx)) * 0.15);
+            }
+            else {
+                this.spawnParticles(canon.x, canon.y, 300, 0.6, 90,
+                    colors, CANON_RADIUS);
+            }
+
+
         }
     }
 
@@ -66,7 +114,10 @@ class Game {
         const index = this.balls.indexOf(ball);
         if (index !== -1) {
             this.balls.splice(index, 1);
-            this.spawnParticles(ball.x, ball.y, 200, 0.6, 90, [ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR]);
+            this.spawnParticles(ball.x, ball.y, 200, 1, 60,
+                [ball.isInvincible() ? BALL_INVINCIBLE_COLOR : BALL_COLOR],
+                BALL_RADIUS,
+                Math.atan2(ball.vy, ball.vx), particleSpeedToDistance(Math.hypot(ball.vy, ball.vx)) * 0.2);
         }
     }
 
@@ -74,7 +125,11 @@ class Game {
         const index = this.missiles.indexOf(missile);
         if (index !== -1) {
             this.missiles.splice(index, 1);
-            this.spawnParticles(missile.x, missile.y, 200, 0.5, 80, FIRE_COLORS);
+
+            
+            this.spawnParticles(missile.x, missile.y, 200, 0.6, 80, FIRE_COLORS,
+                MISSILE_RADIUS,
+                missile.angle, particleSpeedToDistance(missile.flySpeed) * 0.5);
         }
     }
 
@@ -350,9 +405,9 @@ class Game {
     moveMissiles(delta) {
         for (let i = this.missiles.length - 1; i >= 0; --i) {
             const missile = this.missiles[i];
-            missile.fly_speed += MISSILE_ACCELERATION * delta;
-            missile.x += missile.fly_speed * Math.cos(missile.angle) * delta;
-            missile.y += missile.fly_speed * Math.sin(missile.angle) * delta;
+            missile.flySpeed += MISSILE_ACCELERATION * delta;
+            missile.x += missile.flySpeed * Math.cos(missile.angle) * delta;
+            missile.y += missile.flySpeed * Math.sin(missile.angle) * delta;
         }
     }
 
@@ -378,7 +433,7 @@ class Game {
 
                 const dist = Math.hypot(ball.x - canon.x, ball.y - canon.y);
                 if (dist < CANON_RADIUS + BALL_RADIUS) {
-                    this.removeCanon(canon, "ball");
+                    this.removeCanon(canon, "ball", ball);
                     ball.invincibility = BALL_INVINCIBILITY_TIME;
                     break;
                 }
